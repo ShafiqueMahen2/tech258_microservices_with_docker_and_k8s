@@ -20,4 +20,4 @@ To do this:
 docker --version
 ```
 Example output: <br>
-![docker_version.png]](images/docker_version.png)
+![docker_version.png](images/docker_version.png)
