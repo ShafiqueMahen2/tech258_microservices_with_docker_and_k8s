@@ -28,7 +28,30 @@ We put our images on Docker Hub so they're publicly available.
 `docker pull` - Pull down an image from Docker Hub.
 
 ## How does Docker work?
-Docker Client -> The terminal (LocalHost) who provides instructions e.g `docker run`
+
+### 1. Docker Client and Daemon
+
+- **Docker Client**: The Docker client is a command-line tool that allows users to interact with Docker. It sends commands to the Docker daemon to perform actions such as building, running, and managing containers.
+
+- **Docker Daemon**: The Docker daemon (also known as `dockerd`) is a background process responsible for managing Docker objects such as images, containers, volumes, and networks. It handles the heavy lifting of building, running, and distributing Docker containers.
+
+### 2. Image Management
+
+- **Image Creation**: Docker images are created using Dockerfiles, which contain instructions for building the image. When you run the `docker build` command, the Docker daemon reads the Dockerfile and builds the image layer by layer.
+
+- **Image Storage**: Docker images are stored in a local repository on the host system. They can also be pushed to and pulled from remote registries such as Docker Hub or private registries. Images are downloaded from registries when they are needed to run a container.
+
+### 3. Docker Compose
+
+- **Docker Compose**: Docker Compose is a tool for defining and running multi-container Docker applications. It allows you to specify the configuration of your application in a YAML file (`docker-compose.yml`) and manage multiple containers as a single application.
+
+### 4. Client-Server Communication
+
+- **REST API**: The Docker client communicates with the Docker daemon using a REST API. This API allows users to perform various operations on Docker objects programmatically.
+
+- **Communication Channels**: The Docker client and daemon can communicate over UNIX sockets (on Linux) or named pipes (on Windows) for local communication. They can also communicate over a network interface, allowing you to connect a Docker client to a remote Docker daemon.
+  
+![](images/docker_architecture.png)
 
 ## Interacting with a container
 Firstly we have to create a container from an image. Here's an example command below to do this with the `nginx` image.
@@ -121,3 +144,31 @@ docker push <dockerhub_username>/<dockerhub_repository_name>:<tag_name>
 This creates a tag for our image on the DockerHub repo and pushes it!
 Example on DockerHub: <br>
 ![dockerhub_repo_with_pushed_image.png](images/dockerhub_repo_with_pushed_image.png)
+
+`docker logs <container_ID>`
+`docker rm <container_ID>` -> if running you'll get an error. stop the container before removing/force remove
+`docker rm <container_ID> -f`
+
+## Docker Disadvantages
+- **Security** - Easy to SSH in with the `docker exec` command. This means we have to deploy the container within our personal VPC to secure it.
+
+## Building a Docker image from Dockerfile
+1) Create a sample `index.html` file
+2) create Dockerfile <br>
+**NOTES**:
+- Dockerfile should have capitalised D and no extension.
+- Keywords in Dockerfile are always in capitals
+3) Build an image with this tag, using the Dockerfile in the corresponding directory (".") Example command: 
+```
+docker build -t shafiquemahen/nginxtech258 .
+```
+**EXTRA NOTES**: <br>
+- If we make a change to the running container, we would have to commit those changes with the `docker commit` command. Then we would have to rebuild the image with a new tag e.g. `docker build -t shafiquemahen/nginxtech258:v2` then we can push those new changes to DockerHub.
+- We can only have one Dockerfile per folder. If we wanted another Dockerfile, we would have to create another directory and make it there.
+
+We can remove images too. Example command: 
+```
+docker rmi <image_ID> -f
+```
+
+
