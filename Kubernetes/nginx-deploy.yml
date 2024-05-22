@@ -1,0 +1,20 @@
+---
+apiVersion: apps/v1
+kind: Deployment # Pod - service what kind of service
+metadata:
+  name: nginx-deployment # Deployment name
+spec:
+  selector:
+    matchLabels:
+      app: nginx # Look for this label to match with k8 service
+  replicas: 3 # 3 pods
+  template:
+    metadata:
+      labels:
+        app: nginx # This label connects to the service or any other k8 components
+    spec:
+      containers:
+      - name: nginx
+        image: shafiquemahen/nginxtech258
+        ports:
+        - containerPort: 80
