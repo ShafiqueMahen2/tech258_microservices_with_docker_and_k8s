@@ -138,7 +138,7 @@ We now want to create a deployment of our Node.js application on a single-node K
 - **Pods**: Instances of your application. In this diagram, 3 pods will be created and will each run the Node.js application, identified by the label `node`.
 - **Service**: Will be responsible for exposing the application to external traffic. This service will use a selector to match the pods with the label `app: node` and makes the application accessible at `localhost:30001`.
 
-## Steps
+### Steps
 1) Create the `node-deploy.yml` file.
 2) Create the `node-svc.yml` file.
 3) Use `kubectl` to create the deployment and service based of these files:
@@ -150,6 +150,104 @@ kubectl create -f node-svc.yml
 Once deployed go to `localhost:30001` to see the application!
 Example: <br>
 ![](images/node_app_at_localhost_30001.png)
+
+## Deploying MongoDB
+Now that we have our app up and running, let's setup our DB microservice and expose the pods to outside traffic (e.g. from the app) to facilitate communication between the microservices.
+
+### Steps
+1) Create the `mongo-deploy.yml` file.
+2) Create the `mongo-svc.yml` file.
+3) Use `kubectl` to create the deployment and service based of these files:
+```
+kubectl create -f mongo-deploy.yml
+kubectl create -f mongo-svc.yml
+```
+4) Seed the database via one of our app pods using the command
+```
+kubectl exec <pod_name> env node seeds/seed.js
+```
+
+Once deployed go to `localhost:30001/posts` to see the application!
+Example: <br>
+![](images/db_at_localhost_30001_posts.png)
+
+## Full Script
+```
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: shafiquemahen/mongodb-3.2.20-customised
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-svc
+  namespace: default
+spec:
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: 27017
+  selector:
+    app: mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-deployment
+spec:
+  selector:
+    matchLabels:
+      app: node
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - name: node
+        image: shafiquemahen/nodejs-app
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          value: "mongodb://mongo-svc.default.svc.cluster.local:27017/posts"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-svc
+  namespace: default
+spec:
+  ports:
+  - nodePort: 30001
+    port: 80
+    targetPort: 3000
+  selector:
+    app: node
+  type: NodePort
+```
 ## Cleanup
 To remove our `deployment` and `service` that we have created (nginx & node) run the commands:
 ```

@@ -22,3 +22,7 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+        env:
+        - name: DB_HOST
+          value: "mongodb://10.110.152.69:27017/posts"
+
